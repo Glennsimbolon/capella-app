@@ -4,7 +4,6 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { showToast } from '../common/Toast';
 
 const AdminLogin = () => {
-  const navigate = useNavigate();
   const { login } = useAuthContext();
   const [formData, setFormData] = useState({
     email: '',
@@ -51,7 +50,8 @@ const AdminLogin = () => {
       
       if (result.success) {
         showToast(`Selamat datang, ${result.user.nama}!`, 'success');
-        navigate('/admin/dashboard', { replace: true });
+        // 🔥 PAKAI WINDOW.LOCATION!
+        window.location.href = '/admin/dashboard';
       } else {
         showToast(result.error, 'error');
         setErrors({ general: result.error });
@@ -66,8 +66,8 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 relative overflow-hidden">
-      <div className="absolute w-96 h-96 rounded-full bg-blue-500/10 -top-20 -right-20 animate-float"></div>
-      <div className="absolute w-80 h-80 rounded-full bg-purple-500/10 -bottom-20 -left-20 animate-float" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute w-96 h-96 rounded-full bg-blue-500/10 -top-20 -right-20"></div>
+      <div className="absolute w-80 h-80 rounded-full bg-purple-500/10 -bottom-20 -left-20"></div>
       
       <div className="login-card animate-scale-in">
         <div className="login-header">

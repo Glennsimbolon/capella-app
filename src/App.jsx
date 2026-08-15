@@ -27,7 +27,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (!isAuthenticated) {
     if (requiredRole === 'admin') {
-      return <Navigate to="/admin/login" replace />;
+      // 🔥 PAKAI WINDOW.LOCATION
+      window.location.href = '/admin/login';
+      return null;
     }
     return <Navigate to="/login" replace />;
   }
@@ -60,7 +62,6 @@ const App = () => {
   return (
     <div className="app min-h-screen flex flex-col bg-gray-50">
       <Routes>
-        {/* 🔥 ROUTE ADMIN LOGIN DI ATAS! */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
