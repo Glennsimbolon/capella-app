@@ -12,6 +12,7 @@ import { showToast } from '../common/Toast';
 
 const VerifikasiPengajuan = () => {
   const { user } = useAuthContext();
+  const navigate = useNavigate();  // ← PAKAI NAVIGATE!
   const [pengajuanList, setPengajuanList] = useState([]);
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [selectedPengajuan, setSelectedPengajuan] = useState(null);
@@ -36,7 +37,7 @@ const VerifikasiPengajuan = () => {
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
-      window.location.href = '/admin/login';
+      navigate('/admin/login');  // ← PAKAI NAVIGATE!
       return;
     }
     loadPengajuan();
@@ -164,7 +165,7 @@ const VerifikasiPengajuan = () => {
           </div>
           <div className="flex gap-3">
             <button 
-              onClick={() => window.location.href = '/admin/dashboard'} 
+              onClick={() => navigate('/admin/dashboard')}  // ← PAKAI NAVIGATE!
               className="btn btn-secondary flex items-center gap-2"
             >
               Kembali
@@ -182,6 +183,7 @@ const VerifikasiPengajuan = () => {
           </div>
         </div>
 
+        {/* ===== SISANYA SAMA KAYAK SEBELUMNYA ===== */}
         {filteredList.length === 0 ? (
           <div className="card text-center py-12">
             <div className="text-6xl mb-4">📋</div>
@@ -276,9 +278,7 @@ const VerifikasiPengajuan = () => {
                           <tr>
                             <td colSpan="13" className="px-4 py-4 bg-blue-50/50">
                               <div className="border border-blue-200 rounded-xl p-4 bg-white">
-                                <h4 className="text-sm font-semibold text-blue-800 mb-3">
-                                  📊 Simulasi Kredit - {p.nama}
-                                </h4>
+                                <h4 className="text-sm font-semibold text-blue-800 mb-3">📊 Simulasi Kredit - {p.nama}</h4>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                                   <div className="bg-gray-50 p-3 rounded-lg">
