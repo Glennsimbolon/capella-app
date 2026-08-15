@@ -7,13 +7,11 @@ import StatusBadge from '../common/StatusBadge';
 import ConfirmModal from './ConfirmModal';
 import DetailModal from './DetailModal';
 import { getPengajuan, approvePengajuan, rejectPengajuan, subscribePengajuan } from '../../services/supabase';
-import { supabase } from '../../services/supabase';
 import { formatRupiah, formatDateShort, calculateCicilan } from '../../utils/helpers';
 import { showToast } from '../common/Toast';
 
 const VerifikasiPengajuan = () => {
   const { user } = useAuthContext();
-  const navigate = useNavigate();
   const [pengajuanList, setPengajuanList] = useState([]);
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [selectedPengajuan, setSelectedPengajuan] = useState(null);
@@ -38,7 +36,7 @@ const VerifikasiPengajuan = () => {
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
-      navigate('/login');
+      window.location.href = '/admin/login';
       return;
     }
     loadPengajuan();
@@ -64,7 +62,9 @@ const VerifikasiPengajuan = () => {
     });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        channel.unsubscribe();
+      }
     };
   }, [user, loadPengajuan]);
 
@@ -97,6 +97,7 @@ const VerifikasiPengajuan = () => {
 
       if (result.success) {
         showToast(`Pengajuan ${selectedPengajuan.id} ${confirmAction === 'approve' ? 'disetujui' : 'ditolak'}`, 'success');
+        loadPengajuan();
       } else {
         showToast(result.error || 'Gagal memproses pengajuan', 'error');
       }
@@ -114,9 +115,8 @@ const VerifikasiPengajuan = () => {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
-  // Fungsi untuk menghitung simulasi kredit
   const getSimulasi = (pengajuan) => {
-    const bungaPerBulan = 0.015; // 1.5% flat
+    const bungaPerBulan = 0.015;
     const angsuranPokok = pengajuan.nominal / pengajuan.tenor;
     const angsuranBunga = pengajuan.nominal * bungaPerBulan;
     const angsuranPerBulan = Math.round(angsuranPokok + angsuranBunga);
@@ -164,7 +164,7 @@ const VerifikasiPengajuan = () => {
           </div>
           <div className="flex gap-3">
             <button 
-              onClick={() => navigate('/admin/dashboard')} 
+              onClick={() => window.location.href = '/admin/dashboard'} 
               className="btn btn-secondary flex items-center gap-2"
             >
               Kembali
@@ -272,7 +272,6 @@ const VerifikasiPengajuan = () => {
                           </td>
                         </tr>
                         
-                        {/* ===== EXPANDED ROW - SIMULASI LENGKAP ===== */}
                         {isExpanded && (
                           <tr>
                             <td colSpan="13" className="px-4 py-4 bg-blue-50/50">
@@ -281,7 +280,6 @@ const VerifikasiPengajuan = () => {
                                   📊 Simulasi Kredit - {p.nama}
                                 </h4>
                                 
-                                {/* Data Nasabah */}
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                                   <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500">Nama</p>
@@ -301,7 +299,6 @@ const VerifikasiPengajuan = () => {
                                   </div>
                                 </div>
 
-                                {/* Simulasi Kredit */}
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                                   <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                                     <p className="text-xs text-gray-500">Nominal Pinjaman</p>
@@ -325,7 +322,6 @@ const VerifikasiPengajuan = () => {
                                   </div>
                                 </div>
 
-                                {/* Detail Angsuran */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                                   <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500">Pokok Pinjaman / Bulan</p>
@@ -347,7 +343,6 @@ const VerifikasiPengajuan = () => {
                                   </div>
                                 </div>
 
-                                {/* Status Kelayakan */}
                                 <div className={`p-3 rounded-lg ${
                                   simulasi.persentasePenghasilan > 40 
                                     ? 'bg-red-100 border border-red-300' 
@@ -364,7 +359,6 @@ const VerifikasiPengajuan = () => {
                                   </p>
                                 </div>
 
-                                {/* Tombol Aksi Cepat */}
                                 {p.status === 'Menunggu' && (
                                   <div className="mt-4 flex gap-2">
                                     <button 
