@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthContext } from './contexts/AuthContext'; // <-- Path ini benar
+import { useAuthContext } from './contexts/AuthContext';
 import Login from './components/auth/Login';
 import AdminLogin from './components/auth/AdminLogin';
 import Register from './components/auth/Register';
@@ -88,6 +88,7 @@ const App = () => {
           </ProtectedRoute>
         } />
         
+        {/* Fallback - redirect ke login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toast />
