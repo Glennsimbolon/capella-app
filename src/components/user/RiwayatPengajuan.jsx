@@ -36,7 +36,6 @@ const RiwayatPengajuan = () => {
     }
     loadData();
 
-    // ===== REALTIME SUBSCRIPTION =====
     const channel = subscribePengajuanByUser(user.id, (payload) => {
       console.log('Realtime update received:', payload);
       
@@ -57,7 +56,6 @@ const RiwayatPengajuan = () => {
               message: `Pengajuan ${payload.new.id} Anda telah disetujui.`,
               id: payload.new.id
             });
-            showToast(`✅ Pengajuan ${payload.new.id} disetujui!`, 'success');
           } else if (payload.new.status === 'Ditolak') {
             setNotif({
               type: 'error',
@@ -66,7 +64,6 @@ const RiwayatPengajuan = () => {
               id: payload.new.id,
               catatanAdmin: payload.new.catatan_admin
             });
-            showToast(`❌ Pengajuan ${payload.new.id} ditolak`, 'error');
           }
         }
       } else if (payload.eventType === 'DELETE') {
@@ -74,7 +71,6 @@ const RiwayatPengajuan = () => {
       }
     });
 
-    // ===== CLEANUP =====
     return () => {
       if (channel) {
         channel.unsubscribe();
@@ -107,9 +103,7 @@ const RiwayatPengajuan = () => {
             <div className="text-center text-xs text-gray-400">ID: {notif.id}</div>
           </div>
           <div className="border-t border-gray-100 p-4 text-center">
-            <button onClick={onClose} className="btn btn-primary w-full">
-              Tutup
-            </button>
+            <button onClick={onClose} className="btn btn-primary w-full">Tutup</button>
           </div>
         </div>
       </div>
@@ -144,16 +138,9 @@ const RiwayatPengajuan = () => {
             <p className="text-gray-500">{pengajuanList.length} pengajuan tercatat</p>
           </div>
           
-          {/* 🔥 TOMBOL KEMBALI KE DASHBOARD */}
+          {/* 🔥 TOMBOL KEMBALI - PAKAI WINDOW.LOCATION */}
           <button
-            onClick={() => {
-              try {
-                navigate('/dashboard');
-              } catch (error) {
-                console.error('Navigasi gagal:', error);
-                window.location.href = '/dashboard';
-              }
-            }}
+            onClick={() => window.location.href = '/dashboard'}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

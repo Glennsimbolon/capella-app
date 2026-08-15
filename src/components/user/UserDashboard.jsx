@@ -6,7 +6,12 @@ import Footer from '../common/Footer';
 import StatsCard from '../common/StatsCard';
 import StatusBadge from '../common/StatusBadge';
 import FormPengajuan from './FormPengajuan';
-import * as supabaseService from '../../services/supabase';  // <-- IMPORT SEMUA
+import { 
+  getUserStats, 
+  getActivePengajuanCount, 
+  getPengajuanByUserId, 
+  subscribePengajuanByUser 
+} from '../../services/supabase';
 import { formatRupiah, formatDateShort } from '../../utils/helpers';
 import { showToast } from '../common/Toast';
 
@@ -28,9 +33,9 @@ const UserDashboard = () => {
   const loadStats = useCallback(async () => {
     if (!user) return;
     try {
-      const userStats = await supabaseService.getUserStats(user.id);
+      const userStats = await getUserStats(user.id);
       setStats(userStats);
-      const count = await supabaseService.getActivePengajuanCount(user.id);
+      const count = await getActivePengajuanCount(user.id);
       setActiveCount(count);
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -40,7 +45,7 @@ const UserDashboard = () => {
   const loadRecentPengajuan = useCallback(async () => {
     if (!user) return;
     try {
-      const list = await supabaseService.getPengajuanByUserId(user.id);
+      const list = await getPengajuanByUserId(user.id);
       setRecentPengajuan(
         list
           .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
@@ -64,7 +69,8 @@ const UserDashboard = () => {
     }
     loadAllData();
 
-    const channel = supabaseService.subscribePengajuanByUser(user.id, (payload) => {
+    // ===== REALTIME SUBSCRIPTION =====
+    const channel = subscribePengajuanByUser(user.id, (payload) => {
       console.log('🔔 Realtime update received:', payload);
       
       if (payload.eventType === 'INSERT') {
@@ -112,6 +118,7 @@ const UserDashboard = () => {
     };
   }, [user, loadAllData, loadStats]);
 
+  // ===== POPUP NOTIFIKASI =====
   const NotifikasiPopup = ({ notif, onClose }) => {
     if (!notif) return null;
     const isSuccess = notif.type === 'success';
@@ -170,6 +177,7 @@ const UserDashboard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
+      
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-800">Selamat Datang, {user?.nama}</h2>
@@ -184,24 +192,37 @@ const UserDashboard = () => {
         </div>
 
         <div className="flex flex-wrap gap-4 mb-8">
-          <button onClick={() => setShowForm(!showForm)} className="btn btn-primary flex items-center gap-2">
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="btn btn-primary flex items-center gap-2"
+          >
             {showForm ? 'Tutup Form' : 'Ajukan Pinjaman Baru'}
           </button>
-          <button onClick={() => navigate('/riwayat')} className="btn btn-secondary flex items-center gap-2">
+          <button
+            onClick={() => navigate('/riwayat')}
+            className="btn btn-secondary flex items-center gap-2"
+          >
             Lihat Riwayat
           </button>
         </div>
 
         {showForm && (
           <div className="mb-8 animate-fade-in">
-            <FormPengajuan user={user} activeCount={activeCount} onSuccess={handleFormSubmit} />
+            <FormPengajuan 
+              user={user} 
+              activeCount={activeCount}
+              onSuccess={handleFormSubmit}
+            />
           </div>
         )}
 
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-800">Pengajuan Terbaru</h3>
-            <button onClick={() => navigate('/riwayat')} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <button
+              onClick={() => navigate('/riwayat')}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
               Lihat Semua →
             </button>
           </div>
@@ -212,13 +233,22 @@ const UserDashboard = () => {
             <div className="table-container">
               <table className="table">
                 <thead>
-                  <tr><th>ID</th><th>Tipe</th><th>Nominal</th><th>Tenor</th><th>Tanggal</th><th>Status</th></tr>
+                  <tr>
+                    <th>ID</th>
+                    <th>Tipe</th>
+                    <th>Nominal</th>
+                    <th>Tenor</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {recentPengajuan.map((p) => (
                     <tr key={p.id}>
                       <td className="font-medium text-gray-800">{p.id}</td>
-                      <td><span className="badge badge-tipe">{p.tipe}</span></td>
+                      <td>
+                        <span className="badge badge-tipe">{p.tipe}</span>
+                      </td>
                       <td className="font-medium">{formatRupiah(p.nominal)}</td>
                       <td>{p.tenor} bln</td>
                       <td className="text-gray-500 text-sm">{formatDateShort(p.tanggal)}</td>
@@ -233,6 +263,7 @@ const UserDashboard = () => {
       </main>
 
       <Footer />
+
       <NotifikasiPopup notif={notif} onClose={() => setNotif(null)} />
     </div>
   );
