@@ -7,8 +7,8 @@ import StatsCard from '../common/StatsCard';
 import StatusBadge from '../common/StatusBadge';
 import FormPengajuan from './FormPengajuan';
 import { getUserStats, getActivePengajuanCount, getPengajuanByUserId, subscribePengajuanByUser } from '../../services/supabase';
-import { formatRupiah, formatDateShort } from '../../utils/helpers';
 import { supabase } from '../../services/supabase';
+import { formatRupiah, formatDateShort } from '../../utils/helpers';
 import { showToast } from '../common/Toast';
 
 const UserDashboard = () => {
@@ -24,6 +24,7 @@ const UserDashboard = () => {
   const [showForm, setShowForm] = useState(false);
   const [recentPengajuan, setRecentPengajuan] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notif, setNotif] = useState(null); // <-- State untuk notifikasi popup
 
   const loadStats = useCallback(async () => {
     if (!user) return;
@@ -66,7 +67,7 @@ const UserDashboard = () => {
 
     // ===== REALTIME SUBSCRIPTION =====
     const channel = subscribePengajuanByUser(user.id, (payload) => {
-      console.log('Realtime update received:', payload);
+      console.log('🔔 Realtime update received:', payload);
       
       if (payload.eventType === 'INSERT') {
         // Pengajuan baru
@@ -74,15 +75,38 @@ const UserDashboard = () => {
         loadStats();
         showToast('Pengajuan baru berhasil dikirim!', 'success');
       } else if (payload.eventType === 'UPDATE') {
-        // Status berubah (admin approve/reject)
-        setRecentPengajuan(prev => 
-          prev.map(item => 
-            item.id === payload.new.id ? payload.new : item
-          )
-        );
-        loadStats();
-        if (payload.old.status !== payload.new.status) {
-          showToast(`Status pengajuan ${payload.new.id} berubah menjadi ${payload.new.status}`, 'info');
+        // 🔥 STATUS BERUBAH → POPUP NOTIFIKASI!
+        const oldStatus = payload.old.status;
+        const newStatus = payload.new.status;
+        
+        if (oldStatus !== newStatus) {
+          // Update data
+          setRecentPengajuan(prev => 
+            prev.map(item => 
+              item.id === payload.new.id ? payload.new : item
+            )
+          );
+          loadStats();
+
+          // 🔔 TAMPILKAN POPUP NOTIFIKASI
+          if (newStatus === 'Disetujui') {
+            setNotif({
+              type: 'success',
+              title: '🎉 Pengajuan Disetujui!',
+              message: `Pengajuan ${payload.new.id} Anda telah disetujui oleh admin.`,
+              id: payload.new.id
+            });
+            showToast(`🎉 Pengajuan ${payload.new.id} telah disetujui!`, 'success');
+          } else if (newStatus === 'Ditolak') {
+            setNotif({
+              type: 'error',
+              title: '❌ Pengajuan Ditolak',
+              message: `Pengajuan ${payload.new.id} Anda ditolak. Cek catatan admin untuk detail.`,
+              id: payload.new.id,
+              catatanAdmin: payload.new.catatan_admin
+            });
+            showToast(`❌ Pengajuan ${payload.new.id} ditolak`, 'error');
+          }
         }
       }
     });
@@ -92,11 +116,53 @@ const UserDashboard = () => {
     };
   }, [user, loadAllData, loadStats]);
 
-  const handleFormSubmit = (success) => {
-    if (success) {
-      loadAllData();
-      setShowForm(false);
-    }
+  // ===== POPUP NOTIFIKASI =====
+  const NotifikasiPopup = ({ notif, onClose }) => {
+    if (!notif) return null;
+
+    const isSuccess = notif.type === 'success';
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-scale-in overflow-hidden">
+          {/* Header */}
+          <div className={`p-6 text-center ${
+            isSuccess 
+              ? 'bg-gradient-to-r from-emerald-500 to-green-600' 
+              : 'bg-gradient-to-r from-red-500 to-rose-600'
+          }`}>
+            <div className="text-5xl mb-2">{isSuccess ? '🎉' : '❌'}</div>
+            <h3 className="text-xl font-bold text-white">{notif.title}</h3>
+          </div>
+
+          {/* Body */}
+          <div className="p-6">
+            <p className="text-gray-700 text-center mb-4">{notif.message}</p>
+            
+            {notif.catatanAdmin && (
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+                <p className="text-xs text-gray-400 font-medium">Catatan Admin:</p>
+                <p className="text-sm text-gray-700">{notif.catatanAdmin}</p>
+              </div>
+            )}
+
+            <div className="text-center text-xs text-gray-400">
+              ID Pengajuan: {notif.id}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-gray-100 p-4 text-center">
+            <button
+              onClick={onClose}
+              className="btn btn-primary w-full"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -178,7 +244,10 @@ const UserDashboard = () => {
             <FormPengajuan 
               user={user} 
               activeCount={activeCount}
-              onSuccess={handleFormSubmit}
+              onSuccess={() => {
+                loadAllData();
+                setShowForm(false);
+              }}
             />
           </div>
         )}
@@ -234,6 +303,12 @@ const UserDashboard = () => {
       </main>
 
       <Footer />
+
+      {/* ===== POPUP NOTIFIKASI ===== */}
+      <NotifikasiPopup 
+        notif={notif} 
+        onClose={() => setNotif(null)} 
+      />
     </div>
   );
 };
