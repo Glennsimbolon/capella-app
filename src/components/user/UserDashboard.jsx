@@ -6,9 +6,7 @@ import Footer from '../common/Footer';
 import StatsCard from '../common/StatsCard';
 import StatusBadge from '../common/StatusBadge';
 import FormPengajuan from './FormPengajuan';
-import { getUserStats, getActivePengajuanCount, getPengajuanByUserId, subscribePengajuanByUser } from '../../services/supabase';
-
-import { supabase } from '../../services/supabase';
+import * as supabaseService from '../../services/supabase';  // <-- IMPORT SEMUA
 import { formatRupiah, formatDateShort } from '../../utils/helpers';
 import { showToast } from '../common/Toast';
 
@@ -30,9 +28,9 @@ const UserDashboard = () => {
   const loadStats = useCallback(async () => {
     if (!user) return;
     try {
-      const userStats = await getUserStats(user.id);
+      const userStats = await supabaseService.getUserStats(user.id);
       setStats(userStats);
-      const count = await getActivePengajuanCount(user.id);
+      const count = await supabaseService.getActivePengajuanCount(user.id);
       setActiveCount(count);
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -42,7 +40,7 @@ const UserDashboard = () => {
   const loadRecentPengajuan = useCallback(async () => {
     if (!user) return;
     try {
-      const list = await getPengajuanByUserId(user.id);
+      const list = await supabaseService.getPengajuanByUserId(user.id);
       setRecentPengajuan(
         list
           .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
@@ -66,8 +64,7 @@ const UserDashboard = () => {
     }
     loadAllData();
 
-    // ===== REALTIME SUBSCRIPTION =====
-    const channel = subscribePengajuanByUser(user.id, (payload) => {
+    const channel = supabaseService.subscribePengajuanByUser(user.id, (payload) => {
       console.log('🔔 Realtime update received:', payload);
       
       if (payload.eventType === 'INSERT') {
@@ -108,7 +105,6 @@ const UserDashboard = () => {
       }
     });
 
-    // ===== CLEANUP =====
     return () => {
       if (channel) {
         channel.unsubscribe();
@@ -116,46 +112,31 @@ const UserDashboard = () => {
     };
   }, [user, loadAllData, loadStats]);
 
-  // ===== POPUP NOTIFIKASI =====
   const NotifikasiPopup = ({ notif, onClose }) => {
     if (!notif) return null;
-
     const isSuccess = notif.type === 'success';
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-scale-in overflow-hidden">
           <div className={`p-6 text-center ${
-            isSuccess 
-              ? 'bg-gradient-to-r from-emerald-500 to-green-600' 
-              : 'bg-gradient-to-r from-red-500 to-rose-600'
+            isSuccess ? 'bg-gradient-to-r from-emerald-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-rose-600'
           }`}>
             <div className="text-5xl mb-2">{isSuccess ? '🎉' : '❌'}</div>
             <h3 className="text-xl font-bold text-white">{notif.title}</h3>
           </div>
-
           <div className="p-6">
             <p className="text-gray-700 text-center mb-4">{notif.message}</p>
-            
             {notif.catatanAdmin && (
               <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-4">
                 <p className="text-xs text-gray-400 font-medium">Catatan Admin:</p>
                 <p className="text-sm text-gray-700">{notif.catatanAdmin}</p>
               </div>
             )}
-
-            <div className="text-center text-xs text-gray-400">
-              ID Pengajuan: {notif.id}
-            </div>
+            <div className="text-center text-xs text-gray-400">ID: {notif.id}</div>
           </div>
-
           <div className="border-t border-gray-100 p-4 text-center">
-            <button
-              onClick={onClose}
-              className="btn btn-primary w-full"
-            >
-              Tutup
-            </button>
+            <button onClick={onClose} className="btn btn-primary w-full">Tutup</button>
           </div>
         </div>
       </div>
@@ -189,107 +170,55 @@ const UserDashboard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-      
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">
-            Selamat Datang, {user?.nama}
-          </h2>
-          <p className="text-gray-500">
-            Kelola pengajuan kredit Anda dengan mudah
-          </p>
+          <h2 className="text-3xl font-bold text-gray-800">Selamat Datang, {user?.nama}</h2>
+          <p className="text-gray-500">Kelola pengajuan kredit Anda dengan mudah</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            label="Total Pengajuan"
-            value={stats.total}
-            icon="📄"
-            color="blue"
-          />
-          <StatsCard
-            label="Disetujui"
-            value={stats.disetujui}
-            icon="✅"
-            color="green"
-          />
-          <StatsCard
-            label="Ditolak"
-            value={stats.ditolak}
-            icon="❌"
-            color="red"
-          />
-          <StatsCard
-            label="Menunggu"
-            value={stats.menunggu}
-            icon="⏳"
-            color="yellow"
-          />
+          <StatsCard label="Total Pengajuan" value={stats.total} icon="📄" color="blue" />
+          <StatsCard label="Disetujui" value={stats.disetujui} icon="✅" color="green" />
+          <StatsCard label="Ditolak" value={stats.ditolak} icon="❌" color="red" />
+          <StatsCard label="Menunggu" value={stats.menunggu} icon="⏳" color="yellow" />
         </div>
 
         <div className="flex flex-wrap gap-4 mb-8">
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="btn btn-primary flex items-center gap-2"
-          >
+          <button onClick={() => setShowForm(!showForm)} className="btn btn-primary flex items-center gap-2">
             {showForm ? 'Tutup Form' : 'Ajukan Pinjaman Baru'}
           </button>
-          
-          <button
-            onClick={() => navigate('/riwayat')}
-            className="btn btn-secondary flex items-center gap-2"
-          >
+          <button onClick={() => navigate('/riwayat')} className="btn btn-secondary flex items-center gap-2">
             Lihat Riwayat
           </button>
         </div>
 
         {showForm && (
           <div className="mb-8 animate-fade-in">
-            <FormPengajuan 
-              user={user} 
-              activeCount={activeCount}
-              onSuccess={handleFormSubmit}
-            />
+            <FormPengajuan user={user} activeCount={activeCount} onSuccess={handleFormSubmit} />
           </div>
         )}
 
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-800">
-              Pengajuan Terbaru
-            </h3>
-            <button
-              onClick={() => navigate('/riwayat')}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
+            <h3 className="text-lg font-bold text-gray-800">Pengajuan Terbaru</h3>
+            <button onClick={() => navigate('/riwayat')} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               Lihat Semua →
             </button>
           </div>
           
           {recentPengajuan.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              Belum ada pengajuan. Ajukan pinjaman pertama Anda!
-            </p>
+            <p className="text-gray-500 text-center py-8">Belum ada pengajuan. Ajukan pinjaman pertama Anda!</p>
           ) : (
             <div className="table-container">
               <table className="table">
                 <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Tipe</th>
-                    <th>Nominal</th>
-                    <th>Tenor</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
-                  </tr>
+                  <tr><th>ID</th><th>Tipe</th><th>Nominal</th><th>Tenor</th><th>Tanggal</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                   {recentPengajuan.map((p) => (
                     <tr key={p.id}>
                       <td className="font-medium text-gray-800">{p.id}</td>
-                      <td>
-                        <span className="badge badge-tipe">{p.tipe}</span>
-                      </td>
+                      <td><span className="badge badge-tipe">{p.tipe}</span></td>
                       <td className="font-medium">{formatRupiah(p.nominal)}</td>
                       <td>{p.tenor} bln</td>
                       <td className="text-gray-500 text-sm">{formatDateShort(p.tanggal)}</td>
@@ -304,12 +233,7 @@ const UserDashboard = () => {
       </main>
 
       <Footer />
-
-      {/* ===== POPUP NOTIFIKASI ===== */}
-      <NotifikasiPopup 
-        notif={notif} 
-        onClose={() => setNotif(null)} 
-      />
+      <NotifikasiPopup notif={notif} onClose={() => setNotif(null)} />
     </div>
   );
 };
