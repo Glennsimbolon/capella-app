@@ -130,7 +130,6 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Link Register */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-500">
               Belum punya akun?{' '}
@@ -140,13 +139,13 @@ const Login = () => {
             </p>
           </div>
 
-          {/* 🔥 LINK ADMIN TERSEMBUNYI */}
+          {/* 🔥 LINK ADMIN - TAMBAHKAN INI! */}
           <div className="text-center mt-2">
             <Link 
               to="/admin/login" 
               className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
             >
-              Admin
+              🔐 Admin
             </Link>
           </div>
         </div>
