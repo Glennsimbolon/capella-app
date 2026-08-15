@@ -145,7 +145,7 @@ const Login = () => {
               to="/admin/login" 
               className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
             >
-              🔐 Admin
+            
             </Link>
           </div>
         </div>
