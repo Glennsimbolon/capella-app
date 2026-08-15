@@ -27,7 +27,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (!isAuthenticated) {
     if (requiredRole === 'admin') {
-      return <Navigate to="/admin/login" replace />;
+      // 🔥 PAKAI WINDOW.LOCATION!
+      window.location.href = '/admin/login';
+      return null;
     }
     return <Navigate to="/login" replace />;
   }
@@ -42,6 +44,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   return children;
 };
+
 
 const App = () => {
   const { loading } = useAuthContext();
