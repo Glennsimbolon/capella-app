@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuthContext } from '../../contexts/AuthContext'; // <-- Path ini benar
+import { useAuthContext } from '../../contexts/AuthContext';
 import { showToast } from '../common/Toast';
 
 const Login = () => {
@@ -25,18 +25,22 @@ const Login = () => {
     e.preventDefault();
     
     setErrors({});
-    const newErrors = {};
-
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email tidak valid';
-    }
-    if (!formData.password || formData.password.length < 6) {
-      newErrors.password = 'Password minimal 6 karakter';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    
+    if (!formData.email || formData.email.trim() === '') {
+      setErrors({ email: 'Email wajib diisi' });
       showToast('Mohon lengkapi data login', 'error');
+      return;
+    }
+    
+    if (!formData.password || formData.password.trim() === '') {
+      setErrors({ password: 'Password wajib diisi' });
+      showToast('Mohon lengkapi data login', 'error');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setErrors({ email: 'Email tidak valid' });
+      showToast('Email tidak valid', 'error');
       return;
     }
 
@@ -63,14 +67,12 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
       <div className="login-card animate-scale-in">
-        {/* Header */}
         <div className="login-header">
           <div className="login-logo animate-float">CM</div>
           <h1 className="login-title">Capella Multidana</h1>
           <p className="login-subtitle">Portal Pengajuan Kredit Digital</p>
         </div>
 
-        {/* Body */}
         <div className="login-body">
           <div className="flex justify-center mb-6">
             <span className="badge-status">
@@ -128,6 +130,7 @@ const Login = () => {
             </button>
           </form>
 
+          {/* Link Register */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-500">
               Belum punya akun?{' '}
@@ -136,14 +139,22 @@ const Login = () => {
               </Link>
             </p>
           </div>
+
+          {/* 🔥 LINK ADMIN TERSEMBUNYI */}
+          <div className="text-center mt-2">
+            <Link 
+              to="/admin/login" 
+              className="text-xs text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
 
-        {/* Footer */}
         <div className="login-footer">
           <div className="text-xs text-gray-500">
             <p className="font-semibold text-gray-700">Akun Demo:</p>
-            <p><span className="font-medium text-blue-700">admin@capella.com</span> / admin123</p>
-            <p className="text-gray-400 text-[10px] mt-1">Registrasi untuk membuat akun baru</p>
+            <p><span className="font-medium text-blue-700">user@gmail.com</span> / user123</p>
           </div>
         </div>
       </div>
