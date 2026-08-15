@@ -27,9 +27,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (!isAuthenticated) {
     if (requiredRole === 'admin') {
-      // 🔥 PAKAI # UNTUK HASHRouter!
-      window.location.href = '/#/admin/login';
-      return null;
+      return <Navigate to="/admin/login" replace />;
     }
     return <Navigate to="/login" replace />;
   }
