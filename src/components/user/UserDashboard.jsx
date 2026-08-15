@@ -7,6 +7,7 @@ import StatsCard from '../common/StatsCard';
 import StatusBadge from '../common/StatusBadge';
 import FormPengajuan from './FormPengajuan';
 import { getUserStats, getActivePengajuanCount, getPengajuanByUserId, subscribePengajuanByUser } from '../../services/supabase';
+
 import { supabase } from '../../services/supabase';
 import { formatRupiah, formatDateShort } from '../../utils/helpers';
 import { showToast } from '../common/Toast';
@@ -24,7 +25,7 @@ const UserDashboard = () => {
   const [showForm, setShowForm] = useState(false);
   const [recentPengajuan, setRecentPengajuan] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [notif, setNotif] = useState(null); // <-- State untuk notifikasi popup
+  const [notif, setNotif] = useState(null);
 
   const loadStats = useCallback(async () => {
     if (!user) return;
@@ -70,17 +71,14 @@ const UserDashboard = () => {
       console.log('🔔 Realtime update received:', payload);
       
       if (payload.eventType === 'INSERT') {
-        // Pengajuan baru
         setRecentPengajuan(prev => [payload.new, ...prev.slice(0, 4)]);
         loadStats();
         showToast('Pengajuan baru berhasil dikirim!', 'success');
       } else if (payload.eventType === 'UPDATE') {
-        // 🔥 STATUS BERUBAH → POPUP NOTIFIKASI!
         const oldStatus = payload.old.status;
         const newStatus = payload.new.status;
         
         if (oldStatus !== newStatus) {
-          // Update data
           setRecentPengajuan(prev => 
             prev.map(item => 
               item.id === payload.new.id ? payload.new : item
@@ -88,7 +86,6 @@ const UserDashboard = () => {
           );
           loadStats();
 
-          // 🔔 TAMPILKAN POPUP NOTIFIKASI
           if (newStatus === 'Disetujui') {
             setNotif({
               type: 'success',
@@ -111,8 +108,11 @@ const UserDashboard = () => {
       }
     });
 
+    // ===== CLEANUP =====
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        channel.unsubscribe();
+      }
     };
   }, [user, loadAllData, loadStats]);
 
@@ -125,7 +125,6 @@ const UserDashboard = () => {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-scale-in overflow-hidden">
-          {/* Header */}
           <div className={`p-6 text-center ${
             isSuccess 
               ? 'bg-gradient-to-r from-emerald-500 to-green-600' 
@@ -135,7 +134,6 @@ const UserDashboard = () => {
             <h3 className="text-xl font-bold text-white">{notif.title}</h3>
           </div>
 
-          {/* Body */}
           <div className="p-6">
             <p className="text-gray-700 text-center mb-4">{notif.message}</p>
             
@@ -151,7 +149,6 @@ const UserDashboard = () => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="border-t border-gray-100 p-4 text-center">
             <button
               onClick={onClose}
@@ -163,6 +160,13 @@ const UserDashboard = () => {
         </div>
       </div>
     );
+  };
+
+  const handleFormSubmit = (success) => {
+    if (success) {
+      loadAllData();
+      setShowForm(false);
+    }
   };
 
   if (loading) {
@@ -244,10 +248,7 @@ const UserDashboard = () => {
             <FormPengajuan 
               user={user} 
               activeCount={activeCount}
-              onSuccess={() => {
-                loadAllData();
-                setShowForm(false);
-              }}
+              onSuccess={handleFormSubmit}
             />
           </div>
         )}
