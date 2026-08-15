@@ -24,10 +24,8 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Reset errors
     setErrors({});
     
-    // Validasi sederhana
     if (!formData.email || formData.email.trim() === '') {
       setErrors({ email: 'Email wajib diisi' });
       showToast('Mohon lengkapi data login', 'error');
@@ -40,7 +38,6 @@ const AdminLogin = () => {
       return;
     }
 
-    // Validasi format email
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       setErrors({ email: 'Email tidak valid' });
       showToast('Email tidak valid', 'error');
@@ -54,6 +51,7 @@ const AdminLogin = () => {
       
       if (result.success) {
         showToast(`Selamat datang, ${result.user.nama}!`, 'success');
+        // LANGSUNG KE ADMIN DASHBOARD!
         navigate('/admin/dashboard', { replace: true });
       } else {
         showToast(result.error, 'error');
@@ -69,19 +67,16 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 relative overflow-hidden">
-      {/* Decorative Elements */}
-      <div className="absolute w-96 h-96 rounded-full bg-blue-500/10 -top-20 -right-20 animate-float"></div>
-      <div className="absolute w-80 h-80 rounded-full bg-purple-500/10 -bottom-20 -left-20 animate-float" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute w-96 h-96 rounded-full bg-blue-500/10 -top-20 -right-20"></div>
+      <div className="absolute w-80 h-80 rounded-full bg-purple-500/10 -bottom-20 -left-20"></div>
       
       <div className="login-card animate-scale-in">
-        {/* Header */}
         <div className="login-header">
           <div className="login-logo animate-float">CM</div>
           <h1 className="login-title">Admin Panel</h1>
           <p className="login-subtitle">Capella Multidana</p>
         </div>
 
-        {/* Body */}
         <div className="login-body">
           <div className="flex justify-center mb-6">
             <span className="badge-status">
@@ -108,7 +103,6 @@ const AdminLogin = () => {
                 className={`input-field ${errors.email ? 'input-field-error' : ''}`}
               />
               {errors.email && <p className="input-error">{errors.email}</p>}
-              <p className="text-xs text-gray-400 mt-1">Gunakan email yang terdaftar sebagai admin</p>
             </div>
 
             <div className="mb-6">
@@ -141,16 +135,10 @@ const AdminLogin = () => {
           </form>
         </div>
 
-        {/* Footer */}
         <div className="login-footer">
           <div className="text-xs text-gray-500">
             <p className="font-semibold text-gray-700">Akun Demo Admin:</p>
-            <p>
-              <span className="font-medium text-blue-700">admin@capella.com</span> / admin123
-            </p>
-            <p className="text-gray-400 text-[10px] mt-1 border-t border-gray-200 pt-2">
-              Halaman ini tidak terlihat oleh nasabah
-            </p>
+            <p><span className="font-medium text-blue-700">admin@capella.com</span> / admin123</p>
           </div>
         </div>
       </div>
