@@ -138,9 +138,9 @@ const RiwayatPengajuan = () => {
             <p className="text-gray-500">{pengajuanList.length} pengajuan tercatat</p>
           </div>
           
-          {/* 🔥 TOMBOL KEMBALI - PAKAI WINDOW.LOCATION */}
+          {/* 🔥 TOMBOL KEMBALI - PAKAI # UNTUK HASHRouter! */}
           <button
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => window.location.href = '/#/dashboard'}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
