@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthContext } from './contexts/AuthContext';
 import Login from './components/auth/Login';
@@ -11,7 +11,6 @@ import VerifikasiPengajuan from './components/admin/VerifikasiTable';
 import Toast from './components/common/Toast';
 import './App.css';
 
-// Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, isAdmin, isUser, loading } = useAuthContext();
 
@@ -27,7 +26,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!isAuthenticated) {
-    // 🔥 PERBAIKAN: Redirect ke admin login jika requiredRole admin
     if (requiredRole === 'admin') {
       return <Navigate to="/admin/login" replace />;
     }
@@ -62,13 +60,12 @@ const App = () => {
   return (
     <div className="app min-h-screen flex flex-col bg-gray-50">
       <Routes>
-        {/* 🔥 ADMIN LOGIN HARUS DI ATAS! */}
+        {/* 🔥 ROUTE ADMIN LOGIN DI ATAS! */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
         
-        {/* User Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute requiredRole="user">
             <UserDashboard />
@@ -80,7 +77,6 @@ const App = () => {
           </ProtectedRoute>
         } />
         
-        {/* Admin Routes */}
         <Route path="/admin/dashboard" element={
           <ProtectedRoute requiredRole="admin">
             <AdminDashboard />
@@ -92,7 +88,6 @@ const App = () => {
           </ProtectedRoute>
         } />
         
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toast />
