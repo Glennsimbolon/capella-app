@@ -51,7 +51,6 @@ const AdminLogin = () => {
       
       if (result.success) {
         showToast(`Selamat datang, ${result.user.nama}!`, 'success');
-        // LANGSUNG KE ADMIN DASHBOARD!
         navigate('/admin/dashboard', { replace: true });
       } else {
         showToast(result.error, 'error');
