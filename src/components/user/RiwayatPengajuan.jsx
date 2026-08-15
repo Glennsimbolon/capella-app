@@ -79,12 +79,12 @@ const RiwayatPengajuan = () => {
 
   // ===== FUNGSI NAVIGASI KEMBALI =====
   const handleBack = () => {
-    try {
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Navigasi gagal:', error);
-      window.location.href = '/dashboard';
+    // Pastikan user masih login
+    if (!user) {
+      navigate('/login');
+      return;
     }
+    navigate('/dashboard');
   };
 
   // ===== POPUP NOTIFIKASI =====
@@ -149,12 +149,15 @@ const RiwayatPengajuan = () => {
             <p className="text-gray-500">{pengajuanList.length} pengajuan tercatat</p>
           </div>
           
-          {/* 🔥 TOMBOL KEMBALI DIPERBAIKI */}
+          {/* 🔥 TOMBOL KEMBALI */}
           <button
-            onClick={handleBack}
-            className="btn btn-secondary flex items-center gap-2"
+            onClick={() => navigate('/dashboard')}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
           >
-            ← Kembali
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali
           </button>
         </div>
 
