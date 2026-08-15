@@ -27,6 +27,10 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!isAuthenticated) {
+    // Redirect ke login yang sesuai
+    if (requiredRole === 'admin') {
+      return <Navigate to="/admin/login" replace />;
+    }
     return <Navigate to="/login" replace />;
   }
 
@@ -58,9 +62,9 @@ const App = () => {
   return (
     <div className="app min-h-screen flex flex-col bg-gray-50">
       <Routes>
-        {/* Login Routes */}
-        <Route path="/login" element={<Login />} />
+        {/* Login Routes - Admin login HARUS di atas! */}
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
         
@@ -88,7 +92,7 @@ const App = () => {
           </ProtectedRoute>
         } />
         
-        {/* Fallback - redirect ke login */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toast />
