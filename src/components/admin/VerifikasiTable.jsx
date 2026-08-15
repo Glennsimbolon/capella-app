@@ -12,7 +12,7 @@ import { showToast } from '../common/Toast';
 
 const VerifikasiPengajuan = () => {
   const { user } = useAuthContext();
-  const navigate = useNavigate();  // ← PAKAI NAVIGATE!
+  const navigate = useNavigate();
   const [pengajuanList, setPengajuanList] = useState([]);
   const [filterStatus, setFilterStatus] = useState('Semua');
   const [selectedPengajuan, setSelectedPengajuan] = useState(null);
@@ -22,6 +22,7 @@ const VerifikasiPengajuan = () => {
   const [loading, setLoading] = useState(true);
   const [expandedRow, setExpandedRow] = useState(null);
 
+  // ===== LOAD DATA =====
   const loadPengajuan = useCallback(async () => {
     setLoading(true);
     try {
@@ -35,20 +36,24 @@ const VerifikasiPengajuan = () => {
     }
   }, []);
 
+  // ===== REALTIME SUBSCRIPTION =====
   useEffect(() => {
+    // Cek login & role
     if (!user || user.role !== 'admin') {
-      navigate('/admin/login');  // ← PAKAI NAVIGATE!
+      navigate('/admin/login');
       return;
     }
     loadPengajuan();
 
     const channel = subscribePengajuan((payload) => {
-      console.log('Verifikasi Realtime update:', payload);
+      console.log('📡 Verifikasi Realtime update:', payload);
       
       if (payload.eventType === 'INSERT') {
+        // 🔥 PENGAJUAN BARU
         setPengajuanList(prev => [payload.new, ...prev]);
-        showToast(`Pengajuan baru dari ${payload.new.nama}`, 'info');
+        showToast(`📢 Pengajuan baru dari ${payload.new.nama}`, 'success');
       } else if (payload.eventType === 'UPDATE') {
+        // 🔥 STATUS BERUBAH
         setPengajuanList(prev => 
           prev.map(item => 
             item.id === payload.new.id ? payload.new : item
@@ -62,6 +67,7 @@ const VerifikasiPengajuan = () => {
       }
     });
 
+    // 🔥 CLEANUP
     return () => {
       if (channel) {
         channel.unsubscribe();
@@ -69,11 +75,13 @@ const VerifikasiPengajuan = () => {
     };
   }, [user, loadPengajuan]);
 
+  // ===== FILTER =====
   const getFilteredList = () => {
     if (filterStatus === 'Semua') return pengajuanList;
     return pengajuanList.filter(p => p.status === filterStatus);
   };
 
+  // ===== HANDLE MODALS =====
   const handleViewDetail = (pengajuan) => {
     setSelectedPengajuan(pengajuan);
     setShowDetailModal(true);
@@ -97,7 +105,7 @@ const VerifikasiPengajuan = () => {
       }
 
       if (result.success) {
-        showToast(`Pengajuan ${selectedPengajuan.id} ${confirmAction === 'approve' ? 'disetujui' : 'ditolak'}`, 'success');
+        showToast(`✅ Pengajuan ${selectedPengajuan.id} ${confirmAction === 'approve' ? 'disetujui' : 'ditolak'}`, 'success');
         loadPengajuan();
       } else {
         showToast(result.error || 'Gagal memproses pengajuan', 'error');
@@ -112,10 +120,12 @@ const VerifikasiPengajuan = () => {
     }
   };
 
+  // ===== EXPAND ROW =====
   const toggleExpand = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
+  // ===== SIMULASI KREDIT =====
   const getSimulasi = (pengajuan) => {
     const bungaPerBulan = 0.015;
     const angsuranPokok = pengajuan.nominal / pengajuan.tenor;
@@ -137,6 +147,7 @@ const VerifikasiPengajuan = () => {
 
   const filteredList = getFilteredList();
 
+  // ===== LOADING STATE =====
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -154,10 +165,12 @@ const VerifikasiPengajuan = () => {
     );
   }
 
+  // ===== RENDER =====
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
             <h2 className="text-3xl font-bold text-gray-800">Verifikasi Pengajuan</h2>
@@ -165,10 +178,10 @@ const VerifikasiPengajuan = () => {
           </div>
           <div className="flex gap-3">
             <button 
-              onClick={() => navigate('/admin/dashboard')}  // ← PAKAI NAVIGATE!
+              onClick={() => navigate('/admin/dashboard')}
               className="btn btn-secondary flex items-center gap-2"
             >
-              Kembali
+              ← Kembali
             </button>
             <select 
               value={filterStatus} 
@@ -176,14 +189,14 @@ const VerifikasiPengajuan = () => {
               className="input-field w-40"
             >
               <option value="Semua">Semua Status</option>
-              <option value="Menunggu">Menunggu</option>
-              <option value="Disetujui">Disetujui</option>
-              <option value="Ditolak">Ditolak</option>
+              <option value="Menunggu">⏳ Menunggu</option>
+              <option value="Disetujui">✅ Disetujui</option>
+              <option value="Ditolak">❌ Ditolak</option>
             </select>
           </div>
         </div>
 
-        {/* ===== SISANYA SAMA KAYAK SEBELUMNYA ===== */}
+        {/* Table */}
         {filteredList.length === 0 ? (
           <div className="card text-center py-12">
             <div className="text-6xl mb-4">📋</div>
@@ -260,13 +273,13 @@ const VerifikasiPengajuan = () => {
                                     onClick={() => handleAction(p, 'approve')} 
                                     className="btn btn-success btn-sm flex items-center gap-1"
                                   >
-                                    Setujui
+                                    ✅ Setujui
                                   </button>
                                   <button 
                                     onClick={() => handleAction(p, 'reject')} 
                                     className="btn btn-danger btn-sm flex items-center gap-1"
                                   >
-                                    Tolak
+                                    ❌ Tolak
                                   </button>
                                 </>
                               )}
@@ -274,11 +287,14 @@ const VerifikasiPengajuan = () => {
                           </td>
                         </tr>
                         
+                        {/* EXPANDED ROW */}
                         {isExpanded && (
                           <tr>
                             <td colSpan="13" className="px-4 py-4 bg-blue-50/50">
                               <div className="border border-blue-200 rounded-xl p-4 bg-white">
-                                <h4 className="text-sm font-semibold text-blue-800 mb-3">📊 Simulasi Kredit - {p.nama}</h4>
+                                <h4 className="text-sm font-semibold text-blue-800 mb-3">
+                                  📊 Simulasi Kredit - {p.nama}
+                                </h4>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                                   <div className="bg-gray-50 p-3 rounded-lg">
@@ -390,6 +406,7 @@ const VerifikasiPengajuan = () => {
       </main>
       <Footer />
 
+      {/* Modals */}
       {showDetailModal && selectedPengajuan && (
         <DetailModal 
           pengajuan={selectedPengajuan} 
