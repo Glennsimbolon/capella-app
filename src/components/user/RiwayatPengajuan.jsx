@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // <-- TAMBAHKAN Link!
 import { useAuthContext } from '../../contexts/AuthContext';
 import Header from '../common/Header';
 import Footer from '../common/Footer';
@@ -77,16 +77,6 @@ const RiwayatPengajuan = () => {
     };
   }, [user, loadData]);
 
-  // ===== FUNGSI NAVIGASI KEMBALI =====
-  const handleBack = () => {
-    // Pastikan user masih login
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    navigate('/dashboard');
-  };
-
   // ===== POPUP NOTIFIKASI =====
   const NotifikasiPopup = ({ notif, onClose }) => {
     if (!notif) return null;
@@ -149,16 +139,16 @@ const RiwayatPengajuan = () => {
             <p className="text-gray-500">{pengajuanList.length} pengajuan tercatat</p>
           </div>
           
-          {/* 🔥 TOMBOL KEMBALI */}
-          <button
-            onClick={() => navigate('/dashboard')}
+          {/* 🔥 TOMBOL KEMBALI PAKE LINK */}
+          <Link
+            to="/dashboard"
             className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Kembali
-          </button>
+          </Link>
         </div>
 
         {pengajuanList.length === 0 ? (
