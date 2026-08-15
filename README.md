@@ -1,91 +1,88 @@
 # Capella Multidana
 
-Aplikasi pengajuan kredit digital berbasis web dengan dua peran utama: Nasabah dan Admin.
+Aplikasi pengajuan kredit digital berbasis web untuk Nasabah dan Admin.
 
-🔗 Live Demo: https://Glennsimbolon.github.io/capella-app
+Live Demo: https://Glennsimbolon.github.io/capella-app
 
-================================================================================
-📌 TENTANG PROYEK
-================================================================================
-Capella Multidana adalah sistem pengajuan kredit berbasis web yang dirancang untuk
-memudahkan nasabah mengajukan pinjaman secara online serta membantu admin melakukan
-verifikasi secara efisien. Aplikasi ini dilengkapi dengan simulasi angsuran yang
-transparan dan real-time.
+---
 
-================================================================================
-🛠️ TEKNOLOGI
-================================================================================
-- Frontend           : React 18, Vite, Tailwind CSS, React Router DOM
-- Backend & Database : Supabase (Database & Realtime)
-- Deployment         : GitHub Pages
+## Deskripsi
+Sistem pengajuan kredit online dengan simulasi angsuran real-time. Memungkinkan nasabah mengajukan pinjaman dan admin memverifikasi pengajuan.
 
-================================================================================
-✨ FITUR UTAMA
-================================================================================
+---
 
-[👤 Peran: Nasabah]
-- Registrasi & Login : Menggunakan Email & NIK (NIK bersifat unik).
-- Simulasi Angsuran  : Perhitungan pinjaman secara otomatis dan transparan.
-- Pengajuan Kredit   :
-  * Nominal maksimal  : Rp 200.000.000
-  * Tenor maksimal    : 24 bulan
-  * Minimal penghasilan: Rp 1.000.000
-  * Batas pengajuan   : Maksimal 3 pengajuan aktif
-- Riwayat & Status   : Pelacakan riwayat pengajuan dengan pembaruan status secara real-time.
+## Teknologi
+- React 18
+- Vite
+- Tailwind CSS
+- Supabase (Database & Realtime)
+- React Router DOM
+- GitHub Pages
 
-[🛡️ Peran: Admin]
-- Dashboard Statistik : Ringkasan data pengajuan secara keseluruhan.
-- Verifikasi Pengajuan: Menyetujui (Approve) atau menolak (Reject) pengajuan nasabah.
-- Detail Simulasi     : Melihat kalkulasi dan simulasi kredit nasabah.
-- Catatan Admin       : Menambahkan catatan khusus pada tiap pengajuan.
-- Real-time Update    : Pembaruan status pengajuan secara langsung.
+---
 
-================================================================================
-📋 PERBEDAAN AKSES
-================================================================================
-Role    | URL Akses         | Hak Akses
---------+-------------------+---------------------------------------------------
-Nasabah | /                 | Halaman pengajuan & riwayat transaksi pribadi
-Admin   | /admin/login      | Dashboard admin & seluruh pengajuan nasabah
+## Fitur
 
-⚠️ Catatan Penting: Halaman admin sengaja disembunyikan dari navigasi umum. 
-Admin wajib mengakses sistem secara langsung melalui URL khusus admin (/admin/login).
+### Nasabah
+- Registrasi dengan Email & NIK (NIK unik)
+- Login dengan Email
+- Pengajuan kredit dengan simulasi angsuran
+- Maksimal 3 pengajuan aktif
+- Nominal maksimal Rp 200.000.000
+- Tenor maksimal 24 bulan
+- Penghasilan minimal Rp 1.000.000
+- Riwayat pengajuan
+- Update status real-time
 
-================================================================================
-🔑 AKUN DEMO
-================================================================================
+### Admin
+- Dashboard statistik
+- Verifikasi pengajuan (Approve / Reject)
+- Lihat simulasi kredit nasabah
+- Tambah catatan pada pengajuan
+- Update status real-time
 
-[👤 Akun Nasabah]
-Langkah Login:
-1. Buka https://Glennsimbolon.github.io/capella-app
-2. Masukkan salah satu kredensial di bawah ini, lalu klik "Masuk".
+---
 
-Email               | Password
---------------------+------------------
-user@gmail.com      | user123
-rina@gmail.com      | rina123
-dedi@gmail.com      | dedi123
-lina@gmail.com      | lina123
-fajar@gmail.com     | fajar123
+## Perbedaan Akses
 
-[🛡️ Akun Admin]
-Langkah Login:
-1. Akses halaman https://Glennsimbolon.github.io/capella-app/admin/login
-2. Masukkan kredensial admin di bawah ini, lalu klik "Masuk sebagai Admin".
+Role    | URL Access    | Hak Akses
+--------|---------------|--------------------------------------------
+Nasabah | /             | Halaman pengajuan & riwayat sendiri
+Admin   | /admin/login  | Dashboard & verifikasi seluruh pengajuan
 
-Email               | Password
---------------------+------------------
-admin@capella.com   | admin123
+Catatan: Admin diakses langsung via URL /admin/login.
 
-================================================================================
-🚀 CARA MENJALANKAN DI LOKAL (DEVELOPMENT)
-================================================================================
+---
+
+## Akun Demo
+
+### Nasabah
+URL: https://Glennsimbolon.github.io/capella-app
+
+Email           | Password
+----------------|----------
+user@gmail.com  | user123
+rina@gmail.com  | rina123
+dedi@gmail.com  | dedi123
+lina@gmail.com  | lina123
+fajar@gmail.com | fajar123
+
+### Admin
+URL: https://Glennsimbolon.github.io/capella-app/admin/login
+
+Email             | Password
+------------------|----------
+admin@capella.com | admin123
+
+---
+
+## Cara Menjalankan
 
 1. Clone Repository:
    git clone https://github.com/Glennsimbolon/capella-app.git
    cd capella-app
 
-2. Install Dependensi:
+2. Install Dependencies:
    npm install
 
 3. Jalankan Aplikasi:
