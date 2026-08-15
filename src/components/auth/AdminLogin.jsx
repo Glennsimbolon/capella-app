@@ -49,8 +49,8 @@ const AdminLogin = () => {
       
       if (result.success) {
         showToast(`Selamat datang, ${result.user.nama}!`, 'success');
-        // 🔥 PAKAI # UNTUK HASHRouter!
-        window.location.href = '/#/admin/dashboard';
+        // 🔥 PAKAI WINDOW.LOCATION!
+        window.location.href = '/admin/dashboard';
       } else {
         showToast(result.error, 'error');
         setErrors({ general: result.error });
