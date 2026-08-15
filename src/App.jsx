@@ -11,6 +11,7 @@ import VerifikasiPengajuan from './components/admin/VerifikasiTable';
 import Toast from './components/common/Toast';
 import './App.css';
 
+// Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, isAdmin, isUser, loading } = useAuthContext();
 
@@ -26,7 +27,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!isAuthenticated) {
-    // Redirect berdasarkan role yang diminta
+    // 🔥 PERBAIKAN: Redirect ke admin login jika requiredRole admin
     if (requiredRole === 'admin') {
       return <Navigate to="/admin/login" replace />;
     }
@@ -61,14 +62,13 @@ const App = () => {
   return (
     <div className="app min-h-screen flex flex-col bg-gray-50">
       <Routes>
-        {/* ===== LOGIN ROUTES ===== */}
-        {/* Admin login HARUS di atas /login */}
+        {/* Login Routes - Admin login HARUS di atas /login */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
         
-        {/* ===== USER ROUTES ===== */}
+        {/* User Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute requiredRole="user">
             <UserDashboard />
@@ -80,7 +80,7 @@ const App = () => {
           </ProtectedRoute>
         } />
         
-        {/* ===== ADMIN ROUTES ===== */}
+        {/* Admin Routes */}
         <Route path="/admin/dashboard" element={
           <ProtectedRoute requiredRole="admin">
             <AdminDashboard />
@@ -92,6 +92,7 @@ const App = () => {
           </ProtectedRoute>
         } />
         
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toast />
