@@ -62,7 +62,7 @@ const App = () => {
   return (
     <div className="app min-h-screen flex flex-col bg-gray-50">
       <Routes>
-        {/* Login Routes - Admin login HARUS di atas /login */}
+        {/* 🔥 ADMIN LOGIN HARUS DI ATAS! */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
