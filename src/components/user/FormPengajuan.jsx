@@ -48,7 +48,6 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
     'Lainnya'
   ];
 
-  // Fungsi format angka dengan titik separator
   const formatNumber = (value) => {
     const strValue = String(value || '');
     const cleanValue = strValue.replace(/\D/g, '');
@@ -122,8 +121,19 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // 🔥 CEK JIKA SUDAH SUBMIT
+    if (isSubmitting) return;
+    
     setErrors({});
     const newErrors = {};
+    
+    // 🔥 VALIDASI AKTIF DULU (MAKS 3) - WAJIB!
+    if (activeCount >= 3) {
+      newErrors.global = 'Maksimal 3 pengajuan aktif. Selesaikan salah satu terlebih dahulu.';
+      showToast('Maksimal 3 pengajuan aktif', 'error');
+      setErrors(newErrors);
+      return;
+    }
     
     const penghasilanValue = formData.penghasilan ? parseInt(unformatNumber(formData.penghasilan)) : 0;
     if (!penghasilanValue || penghasilanValue < 1000000) {
@@ -153,7 +163,7 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
       return;
     }
 
-    // 🔥 VALIDASI RASIO ANGSURAN (MAKSIMAL 40% DARI PENGHASILAN)
+    // 🔥 VALIDASI RASIO ANGSURAN (MAKSIMAL 40%)
     const bungaPerBulan = 0.015;
     const angsuranPokok = nominalValue / tenorValue;
     const angsuranBunga = nominalValue * bungaPerBulan;
@@ -164,13 +174,6 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
       const maxAngsuran = Math.round(penghasilanValue * 0.4);
       newErrors.nominal = `Angsuran (${formatRupiah(angsuranPerBulan)}) melebihi 40% dari penghasilan (${formatRupiah(penghasilanValue)}). Maksimal angsuran ${formatRupiah(maxAngsuran)}.`;
       showToast(`Angsuran melebihi 40% dari penghasilan! Maksimal ${formatRupiah(maxAngsuran)}`, 'error');
-      setErrors(newErrors);
-      return;
-    }
-    
-    if (activeCount >= 3) {
-      newErrors.global = 'Maksimal 3 pengajuan aktif';
-      showToast('Maksimal 3 pengajuan aktif', 'error');
       setErrors(newErrors);
       return;
     }
@@ -227,10 +230,13 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
         angsuran: simulasi.angsuranPerBulan
       };
 
+      console.log('📝 Data yang dikirim:', dataToSubmit);
+      console.log('📊 Active count:', activeCount);
+
       const result = await submitPengajuan(dataToSubmit);
 
       if (result.success) {
-        showToast('Pengajuan berhasil dikirim!', 'success');
+        showToast('✅ Pengajuan berhasil dikirim!', 'success');
         setFormData(prev => ({
           ...prev,
           tipe: TIPE_PENGAJUAN.MOTOR,
@@ -277,6 +283,7 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Data Pribadi */}
           <div className="md:col-span-2">
             <h4 className="text-sm font-semibold text-gray-600 mb-2 border-b border-gray-200 pb-2">
               Data Pribadi
@@ -284,32 +291,74 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
           </div>
 
           <div>
-            <label className="input-label">NIK <span className="text-red-500">*</span></label>
-            <input type="text" name="nik" value={formData.nik} onChange={handleChange} placeholder="Masukkan NIK" className={`input-field ${errors.nik ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              NIK <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="nik"
+              value={formData.nik}
+              onChange={handleChange}
+              placeholder="Masukkan NIK"
+              className={`input-field ${errors.nik ? 'input-field-error' : ''}`}
+            />
             {errors.nik && <p className="input-error">{errors.nik}</p>}
           </div>
 
           <div>
-            <label className="input-label">Nama Lengkap <span className="text-red-500">*</span></label>
-            <input type="text" name="nama" value={formData.nama} onChange={handleChange} placeholder="Masukkan nama lengkap" className={`input-field ${errors.nama ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              Nama Lengkap <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="nama"
+              value={formData.nama}
+              onChange={handleChange}
+              placeholder="Masukkan nama lengkap"
+              className={`input-field ${errors.nama ? 'input-field-error' : ''}`}
+            />
             {errors.nama && <p className="input-error">{errors.nama}</p>}
           </div>
 
           <div>
-            <label className="input-label">Tempat Lahir <span className="text-red-500">*</span></label>
-            <input type="text" name="tempat_lahir" value={formData.tempat_lahir} onChange={handleChange} placeholder="Contoh: Bandung" className={`input-field ${errors.tempat_lahir ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              Tempat Lahir <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="tempat_lahir"
+              value={formData.tempat_lahir}
+              onChange={handleChange}
+              placeholder="Contoh: Bandung"
+              className={`input-field ${errors.tempat_lahir ? 'input-field-error' : ''}`}
+            />
             {errors.tempat_lahir && <p className="input-error">{errors.tempat_lahir}</p>}
           </div>
 
           <div>
-            <label className="input-label">Tanggal Lahir <span className="text-red-500">*</span></label>
-            <input type="date" name="tanggal_lahir" value={formData.tanggal_lahir} onChange={handleChange} className={`input-field ${errors.tanggal_lahir ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              Tanggal Lahir <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              name="tanggal_lahir"
+              value={formData.tanggal_lahir}
+              onChange={handleChange}
+              className={`input-field ${errors.tanggal_lahir ? 'input-field-error' : ''}`}
+            />
             {errors.tanggal_lahir && <p className="input-error">{errors.tanggal_lahir}</p>}
           </div>
 
           <div>
-            <label className="input-label">Pekerjaan <span className="text-red-500">*</span></label>
-            <select name="pekerjaan" value={formData.pekerjaan} onChange={handleChange} className={`input-field ${errors.pekerjaan ? 'input-field-error' : ''}`}>
+            <label className="input-label">
+              Pekerjaan <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="pekerjaan"
+              value={formData.pekerjaan}
+              onChange={handleChange}
+              className={`input-field ${errors.pekerjaan ? 'input-field-error' : ''}`}
+            >
               <option value="">-- Pilih Pekerjaan --</option>
               {daftarPekerjaan.map((job) => (
                 <option key={job} value={job}>{job}</option>
@@ -319,25 +368,55 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
           </div>
 
           <div className="md:col-span-2">
-            <label className="input-label">Alamat <span className="text-red-500">*</span></label>
-            <input type="text" name="alamat" value={formData.alamat} onChange={handleChange} placeholder="Alamat lengkap" className={`input-field ${errors.alamat ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              Alamat <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="alamat"
+              value={formData.alamat}
+              onChange={handleChange}
+              placeholder="Alamat lengkap"
+              className={`input-field ${errors.alamat ? 'input-field-error' : ''}`}
+            />
             {errors.alamat && <p className="input-error">{errors.alamat}</p>}
           </div>
 
           <div>
-            <label className="input-label">Penghasilan Bulanan (Rp) <span className="text-red-500">*</span></label>
-            <input type="text" name="penghasilan" value={formData.penghasilan} onChange={handleChange} placeholder="Contoh: 5.000.000" className={`input-field ${errors.penghasilan ? 'input-field-error' : ''}`} />
-            {errors.penghasilan && <p className="input-error text-red-600 font-semibold">⚠️ {errors.penghasilan}</p>}
+            <label className="input-label">
+              Penghasilan Bulanan (Rp) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="penghasilan"
+              value={formData.penghasilan}
+              onChange={handleChange}
+              placeholder="Contoh: 5.000.000"
+              className={`input-field ${errors.penghasilan ? 'input-field-error' : ''}`}
+            />
+            {errors.penghasilan && (
+              <p className="input-error text-red-600 font-semibold">
+                ⚠️ {errors.penghasilan}
+              </p>
+            )}
             <p className="text-xs text-gray-400 mt-1">Minimal Rp 1.000.000</p>
           </div>
 
+          {/* Data Pengajuan */}
           <div className="md:col-span-2 mt-2">
-            <h4 className="text-sm font-semibold text-gray-600 mb-2 border-b border-gray-200 pb-2">Data Pengajuan</h4>
+            <h4 className="text-sm font-semibold text-gray-600 mb-2 border-b border-gray-200 pb-2">
+              Data Pengajuan
+            </h4>
           </div>
 
           <div>
             <label className="input-label">Tipe Pengajuan</label>
-            <select name="tipe" value={formData.tipe} onChange={handleChange} className="input-field">
+            <select
+              name="tipe"
+              value={formData.tipe}
+              onChange={handleChange}
+              className="input-field"
+            >
               <option value={TIPE_PENGAJUAN.MOTOR}>Motor</option>
               <option value={TIPE_PENGAJUAN.MOBIL}>Mobil</option>
               <option value={TIPE_PENGAJUAN.MULTIGUNA}>Multiguna</option>
@@ -345,39 +424,73 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
           </div>
 
           <div>
-            <label className="input-label">Nominal Pengajuan (Rp) <span className="text-red-500">*</span></label>
-            <input type="text" name="nominal" value={formData.nominal} onChange={handleChange} placeholder="Contoh: 25.000.000" className={`input-field ${errors.nominal ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              Nominal Pengajuan (Rp) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="nominal"
+              value={formData.nominal}
+              onChange={handleChange}
+              placeholder="Contoh: 25.000.000"
+              className={`input-field ${errors.nominal ? 'input-field-error' : ''}`}
+            />
             {errors.nominal && <p className="input-error">{errors.nominal}</p>}
             <p className="text-xs text-gray-400 mt-1">Maksimal Rp 200.000.000</p>
           </div>
 
           <div>
-            <label className="input-label">Tenor (bulan) <span className="text-red-500">*</span></label>
-            <input type="number" name="tenor" value={formData.tenor} onChange={handleChange} placeholder="Maksimal 24 bulan" className={`input-field ${errors.tenor ? 'input-field-error' : ''}`} />
+            <label className="input-label">
+              Tenor (bulan) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              name="tenor"
+              value={formData.tenor}
+              onChange={handleChange}
+              placeholder="Maksimal 24 bulan"
+              className={`input-field ${errors.tenor ? 'input-field-error' : ''}`}
+            />
             {errors.tenor && <p className="input-error">{errors.tenor}</p>}
             <p className="text-xs text-gray-400 mt-1">Maksimal 24 bulan</p>
           </div>
 
           <div className="md:col-span-2">
             <label className="input-label">Catatan (opsional)</label>
-            <textarea name="catatan" value={formData.catatan} onChange={handleChange} placeholder="Tujuan penggunaan dana, dll." rows="3" className="input-field" />
+            <textarea
+              name="catatan"
+              value={formData.catatan}
+              onChange={handleChange}
+              placeholder="Tujuan penggunaan dana, dll."
+              rows="3"
+              className="input-field"
+            />
           </div>
 
+          {/* ===== SIMULASI KREDIT ===== */}
           {simulasi.angsuranPerBulan > 0 && (
             <div className="md:col-span-2 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <h4 className="text-sm font-semibold text-blue-800 mb-3">📊 Simulasi Kredit</h4>
+              <h4 className="text-sm font-semibold text-blue-800 mb-3">
+                📊 Simulasi Kredit
+              </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white p-3 rounded-lg border border-blue-100">
                   <p className="text-xs text-gray-500">Angsuran / Bulan</p>
-                  <p className="text-lg font-bold text-blue-700">{formatRupiah(simulasi.angsuranPerBulan)}</p>
+                  <p className="text-lg font-bold text-blue-700">
+                    {formatRupiah(simulasi.angsuranPerBulan)}
+                  </p>
                 </div>
                 <div className="bg-white p-3 rounded-lg border border-blue-100">
                   <p className="text-xs text-gray-500">Total Pembayaran</p>
-                  <p className="text-lg font-bold text-blue-700">{formatRupiah(simulasi.totalBayar)}</p>
+                  <p className="text-lg font-bold text-blue-700">
+                    {formatRupiah(simulasi.totalBayar)}
+                  </p>
                 </div>
                 <div className="bg-white p-3 rounded-lg border border-blue-100">
                   <p className="text-xs text-gray-500">Total Bunga</p>
-                  <p className="text-lg font-bold text-amber-600">{formatRupiah(simulasi.bunga)}</p>
+                  <p className="text-lg font-bold text-amber-600">
+                    {formatRupiah(simulasi.bunga)}
+                  </p>
                 </div>
                 <div className="bg-white p-3 rounded-lg border border-blue-100">
                   <p className="text-xs text-gray-500">% dari Penghasilan</p>
@@ -389,16 +502,35 @@ const FormPengajuan = ({ user, activeCount, onSuccess }) => {
                   )}
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">* Simulasi dengan bunga 1.5% flat per bulan</p>
+              <p className="text-xs text-gray-500 mt-2">
+                * Simulasi dengan bunga 1.5% flat per bulan
+              </p>
             </div>
           )}
         </div>
 
         <div className="mt-6 flex gap-3">
-          <button type="submit" disabled={isSubmitting || activeCount >= 3} className="btn btn-primary flex items-center gap-2">
-            {isSubmitting ? <><span className="spinner"></span> Mengirim...</> : 'Kirim Pengajuan'}
+          <button
+            type="submit"
+            disabled={isSubmitting || activeCount >= 3}
+            className="btn btn-primary flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="spinner"></span>
+                Mengirim...
+              </>
+            ) : (
+              'Kirim Pengajuan'
+            )}
           </button>
-          <button type="button" onClick={() => onSuccess(false)} className="btn btn-secondary">Batal</button>
+          <button
+            type="button"
+            onClick={() => onSuccess(false)}
+            className="btn btn-secondary"
+          >
+            Batal
+          </button>
         </div>
       </form>
     </div>
