@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { showToast } from '../common/Toast';
 
@@ -50,8 +49,8 @@ const AdminLogin = () => {
       
       if (result.success) {
         showToast(`Selamat datang, ${result.user.nama}!`, 'success');
-        // 🔥 PAKAI WINDOW.LOCATION!
-        window.location.href = '/admin/dashboard';
+        // 🔥 PAKAI # UNTUK HASHRouter!
+        window.location.href = '/#/admin/dashboard';
       } else {
         showToast(result.error, 'error');
         setErrors({ general: result.error });
