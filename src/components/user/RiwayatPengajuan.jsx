@@ -5,7 +5,7 @@ import Header from '../common/Header';
 import Footer from '../common/Footer';
 import StatusBadge from '../common/StatusBadge';
 import { getPengajuanByUserId, subscribePengajuanByUser } from '../../services/supabase';
-import { supabase } from '../../services/supabase'; // <-- TAMBAHKAN!
+import { supabase } from '../../services/supabase';
 import { formatRupiah, formatDateShort } from '../../utils/helpers';
 import { showToast } from '../common/Toast';
 
@@ -14,7 +14,7 @@ const RiwayatPengajuan = () => {
   const navigate = useNavigate();
   const [pengajuanList, setPengajuanList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [notif, setNotif] = useState(null); // <-- TAMBAHKAN UNTUK POPUP!
+  const [notif, setNotif] = useState(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -49,8 +49,6 @@ const RiwayatPengajuan = () => {
             item.id === payload.new.id ? payload.new : item
           )
         );
-        
-        // 🔔 TAMPILKAN POPUP NOTIFIKASI
         if (payload.old.status !== payload.new.status) {
           if (payload.new.status === 'Disetujui') {
             setNotif({
@@ -59,7 +57,6 @@ const RiwayatPengajuan = () => {
               message: `Pengajuan ${payload.new.id} Anda telah disetujui.`,
               id: payload.new.id
             });
-            showToast(`✅ Pengajuan ${payload.new.id} disetujui!`, 'success');
           } else if (payload.new.status === 'Ditolak') {
             setNotif({
               type: 'error',
@@ -68,7 +65,6 @@ const RiwayatPengajuan = () => {
               id: payload.new.id,
               catatanAdmin: payload.new.catatan_admin
             });
-            showToast(`❌ Pengajuan ${payload.new.id} ditolak`, 'error');
           }
         }
       } else if (payload.eventType === 'DELETE') {
@@ -81,7 +77,17 @@ const RiwayatPengajuan = () => {
     };
   }, [user, loadData]);
 
-  // ===== KOMPONEN POPUP NOTIFIKASI =====
+  // ===== FUNGSI NAVIGASI KEMBALI =====
+  const handleBack = () => {
+    try {
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Navigasi gagal:', error);
+      window.location.href = '/dashboard';
+    }
+  };
+
+  // ===== POPUP NOTIFIKASI =====
   const NotifikasiPopup = ({ notif, onClose }) => {
     if (!notif) return null;
     const isSuccess = notif.type === 'success';
@@ -135,14 +141,20 @@ const RiwayatPengajuan = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
+      
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
             <h2 className="text-3xl font-bold text-gray-800">Riwayat Pengajuan</h2>
             <p className="text-gray-500">{pengajuanList.length} pengajuan tercatat</p>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="btn btn-secondary flex items-center gap-2">
-            Kembali
+          
+          {/* 🔥 TOMBOL KEMBALI DIPERBAIKI */}
+          <button
+            onClick={handleBack}
+            className="btn btn-secondary flex items-center gap-2"
+          >
+            ← Kembali
           </button>
         </div>
 
@@ -151,7 +163,10 @@ const RiwayatPengajuan = () => {
             <div className="text-6xl mb-4">📄</div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">Belum Ada Pengajuan</h3>
             <p className="text-gray-500">Ajukan pinjaman pertama Anda sekarang</p>
-            <button onClick={() => navigate('/dashboard')} className="btn btn-primary mt-4 inline-flex items-center gap-2">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="btn btn-primary mt-4 inline-flex items-center gap-2"
+            >
               Ajukan Pinjaman
             </button>
           </div>
@@ -161,14 +176,21 @@ const RiwayatPengajuan = () => {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>ID</th><th>Tipe</th><th>Nominal</th><th>Tenor</th><th>Tanggal</th><th>Status</th>
+                    <th>ID</th>
+                    <th>Tipe</th>
+                    <th>Nominal</th>
+                    <th>Tenor</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pengajuanList.map((p) => (
                     <tr key={p.id}>
                       <td className="font-medium text-gray-800">{p.id}</td>
-                      <td><span className="badge badge-tipe">{p.tipe}</span></td>
+                      <td>
+                        <span className="badge badge-tipe">{p.tipe}</span>
+                      </td>
                       <td className="font-medium">{formatRupiah(p.nominal)}</td>
                       <td>{p.tenor} bln</td>
                       <td className="text-gray-500 text-sm">{formatDateShort(p.tanggal)}</td>
@@ -181,6 +203,7 @@ const RiwayatPengajuan = () => {
           </div>
         )}
       </main>
+
       <Footer />
 
       <NotifikasiPopup notif={notif} onClose={() => setNotif(null)} />
